@@ -12,4 +12,5 @@ if [ -f "$HOME/.nvm/nvm.sh" ]; then
 fi
 
 cd "$ROOT"
+node scripts/ensure-deps.js
 exec node src/index.js "$@"

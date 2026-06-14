@@ -10,7 +10,8 @@
   "scripts": {
     "start": "bash scripts/run.sh",
     "scrape": "bash scripts/run.sh",
-    "web": "bash scripts/web.sh"
+    "web": "bash scripts/web.sh",
+    "postinstall": "node scripts/setup-env.js"
   },
   "keywords": ["amazon", "scraper", "fbm"],
   "license": "MIT",

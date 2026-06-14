@@ -17,15 +17,18 @@ bash scripts/check-vpn.sh
 
 ```bash
 nvm use 20
-npm install
-npx playwright install chromium
-cp .env.example .env
-chmod +x scripts/run.sh
+chmod +x scripts/run.sh scripts/web.sh
 ```
+
+首次运行 `npm run web` 或 `npm run scrape` 时会自动安装 npm 依赖、Playwright Chromium，并从 `.env.example` 生成 `.env`（若不存在）。
 
 ## Quick Start（推荐）
 
-`scripts/run.sh` 会自动配置 **代理 + Node 版本**，一条命令即可：
+`scripts/run.sh` / `scripts/web.sh` 会自动配置 **代理 + Node 版本 + 依赖**，一条命令即可：
+
+```bash
+npm run web
+```
 
 ```bash
 npm run scrape -- "phone case"
