@@ -8,9 +8,10 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "bash scripts/run.sh",
-    "scrape": "bash scripts/run.sh",
-    "web": "bash scripts/web.sh",
+    "start": "node scripts/launch.js scrape",
+    "scrape": "node scripts/launch.js scrape",
+    "web": "node scripts/launch.js web",
+    "setup": "node scripts/setup-deps.js",
     "postinstall": "node scripts/setup-env.js"
   },
   "keywords": ["amazon", "scraper", "fbm"],

@@ -4,27 +4,68 @@ Scrape Amazon UK (`amazon.co.uk`) by keyword, filter **FBM** (merchant-fulfilled
 
 ## Requirements
 
-- Node.js 18+ (recommended 20 LTS)
+- Node.js 18+（推荐 20 LTS）— **没有 Node 也可以，见下方「零环境安装」**
 - VPN with local proxy on `127.0.0.1:7897`
 - **VPN 出口必须是英国 (GB)** — 俄罗斯/中国等非英国 IP 会导致 Amazon 显示「Deliver to Russian Federation」等，offer listing 为空，无法抓取 FBM 卖家
 
 ```bash
 # 运行前检查代理出口国家
-bash scripts/check-vpn.sh
+bash scripts/check-vpn.sh          # macOS / Linux
+powershell -File scripts/check-vpn.ps1   # Windows
 ```
 
-## Setup
+## 零环境安装（电脑没有 Node.js）
+
+### 平台对照
+
+| 操作 | macOS / Linux | Windows（CMD / PowerShell） |
+|------|---------------|----------------------------|
+| 首次安装（含 Node） | `bash scripts/install.sh` | `powershell -File scripts/install.ps1` |
+| 仅装项目依赖（已有 Node） | `npm run setup` | `npm run setup` |
+| 启动 Web | `npm run web` | `npm run web` |
+| 双击启动 | `启动 Web.command` | `启动 Web.bat` |
+| 检查 VPN 出口 | `bash scripts/check-vpn.sh` | `powershell -File scripts/check-vpn.ps1` |
+
+`npm run web` / `npm run scrape` 已改为跨平台 Node 启动器，**Windows 上可直接用**（需先装好 Node）。
+
+### macOS
+
+1. 打开终端，进入项目目录
+2. 一条命令完成 Node + 依赖 + Chromium：
 
 ```bash
-nvm use 20
-chmod +x scripts/run.sh scripts/web.sh
+bash scripts/install.sh
+```
+
+3. 启动：`npm run web`，或双击 **`启动 Web.command`**
+
+若无法双击，执行：`chmod +x "启动 Web.command" scripts/*.sh`
+
+### Windows
+
+1. 打开 PowerShell，进入项目目录
+2. 一条命令完成 Node + 依赖 + Chromium：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+```
+
+3. 启动：`npm run web`，或双击 **`启动 Web.bat`**
+
+没有 winget 时，先从 [nodejs.org](https://nodejs.org/) 安装 LTS，再执行 `npm run setup`。
+
+### 已有 Node 的用户
+
+```bash
+npm run setup   # 可选，确保依赖齐全
+npm run web
 ```
 
 首次运行 `npm run web` 或 `npm run scrape` 时会自动安装 npm 依赖、Playwright Chromium，并从 `.env.example` 生成 `.env`（若不存在）。
 
 ## Quick Start（推荐）
 
-`scripts/run.sh` / `scripts/web.sh` 会自动配置 **代理 + Node 版本 + 依赖**，一条命令即可：
+`npm run web` / `npm run scrape` 会自动配置 **代理 + 依赖**，macOS 与 Windows 通用：
 
 ```bash
 npm run web
@@ -34,11 +75,7 @@ npm run web
 npm run scrape -- "phone case"
 ```
 
-或：
-
-```bash
-./scripts/run.sh phone case
-```
+macOS/Linux 也可继续用：`bash scripts/run.sh phone case`（需 Git Bash 或 WSL 才能在 Windows 上用）
 
 ## Web UI
 
@@ -106,13 +143,16 @@ npm run scrape -- "phone case" --headed
 
 ## VPN / Proxy
 
-`scripts/run.sh` 已内置代理设置（`127.0.0.1:7897`），一般无需手动 export。
+启动命令已内置代理（`127.0.0.1:7897`），一般无需手动设置。
 
-如需手动运行：
+检查 VPN 是否走英国出口：
 
 ```bash
-source scripts/env-proxy.sh
-node src/index.js phone case
+# macOS / Linux
+bash scripts/check-vpn.sh
+
+# Windows
+powershell -File scripts/check-vpn.ps1
 ```
 
 **VPN 需选择英国节点**，否则 amazon.co.uk 可能返回 503。
