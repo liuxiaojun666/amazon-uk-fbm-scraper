@@ -1,0 +1,38 @@
+---
+description: VPN proxy required before running scraper in terminal
+alwaysApply: true
+---
+
+# VPN / Proxy（终端运行前必配）
+
+本机已配置 VPN，但在终端执行爬虫前**必须先设置代理环境变量**，否则 Playwright 无法走代理访问 amazon.co.uk。
+
+每次在终端运行爬虫、测试、或 `npm start` 之前执行：
+
+```bash
+export http_proxy=http://127.0.0.1:7897
+export https_proxy=http://127.0.0.1:7897
+```
+
+或使用项目脚本（已内置代理 + Node 版本）：
+
+```bash
+npm run scrape -- "phone case"
+# 或
+./scripts/run.sh phone case
+```
+
+也可在 `.env` 中配置（Playwright 会自动读取）：
+
+```
+HTTP_PROXY=http://127.0.0.1:7897
+HTTPS_PROXY=http://127.0.0.1:7897
+```
+
+**VPN 需选择英国节点**，否则 amazon.co.uk 可能返回 503。
+
+**注意**：需 Node.js 18+。推荐直接用：
+
+```bash
+npm run scrape -- "phone case"
+```

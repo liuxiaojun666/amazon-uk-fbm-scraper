@@ -1,0 +1,23 @@
+{
+  "name": "amazon-uk-fbm-scraper",
+  "version": "1.0.0",
+  "description": "Amazon UK FBM Chinese seller scraper by keyword",
+  "main": "src/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "bash scripts/run.sh",
+    "scrape": "bash scripts/run.sh",
+    "web": "bash scripts/web.sh"
+  },
+  "keywords": ["amazon", "scraper", "fbm"],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "playwright": "^1.50.1"
+  }
+}

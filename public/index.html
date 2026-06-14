@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon UK 爬虫</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Amazon UK FBM 爬虫</h1>
+      <p class="subtitle">按关键词搜索，筛选 FBM/FBA，支持目标省份、排除省份或不限省份</p>
+    </header>
+
+    <section class="card">
+      <h2>搜索条件</h2>
+      <form id="scrape-form">
+        <div class="form-grid">
+          <label class="full-width">
+            关键词 <span class="required">*</span>
+            <input type="text" name="keyword" id="keyword" placeholder="phone case" required>
+          </label>
+
+          <label>
+            配送类型
+            <select name="fulfillment" id="fulfillment">
+              <option value="fbm">FBM（自发货）</option>
+              <option value="fba">FBA（亚马逊配送）</option>
+              <option value="all">全部</option>
+            </select>
+          </label>
+
+          <label>
+            深度扫描上限
+            <input type="number" name="limit" id="limit" min="0" title="实际打开商品页深入扫描的数量；预筛跳过的非中国卖家不计入" placeholder="0 = 不限，自动翻页">
+          </label>
+
+          <label>
+            最低价 (£)
+            <input type="number" name="minPrice" id="minPrice" min="0" step="0.01">
+          </label>
+
+          <label>
+            最高价 (£)
+            <input type="number" name="maxPrice" id="maxPrice" min="0" step="0.01">
+          </label>
+
+          <label>
+            大于等于 (天)
+            <input type="number" name="minDeliveryDays" id="minDeliveryDays" min="0" placeholder="如 20" title="按商品最长配送时间筛选">
+          </label>
+
+          <label>
+            小于等于 (天)
+            <input type="number" name="maxDeliveryDays" id="maxDeliveryDays" min="0" placeholder="如 30" title="按商品最短配送时间筛选">
+          </label>
+
+          <label>
+            英国邮编
+            <input type="text" name="postcode" id="postcode" placeholder="SW1A 1AA">
+          </label>
+
+          <label>
+            省份筛选
+            <select name="provinceMode" id="provinceMode">
+              <option value="include">目标省份（晋陕豫冀）</option>
+              <option value="exclude">排除省份</option>
+              <option value="all">不限省份</option>
+            </select>
+          </label>
+
+          <label class="full-width" id="exclude-provinces-wrap" hidden>
+            排除省份（逗号分隔）
+            <input type="text" name="excludeProvinces" id="excludeProvinces" placeholder="广东,江苏,浙江,上海">
+          </label>
+        </div>
+
+        <div class="checkboxes">
+          <label><input type="checkbox" name="noPostcode" id="noPostcode"> 不设置邮编</label>
+          <label><input type="checkbox" name="headed" id="headed"> 显示浏览器（过验证码）</label>
+          <label><input type="checkbox" name="skipProxyCheck" id="skipProxyCheck"> 跳过代理检查</label>
+        </div>
+
+        <div class="actions">
+          <button type="submit" id="start-btn" class="btn-primary">开始爬取</button>
+          <button type="button" id="stop-btn" class="btn-danger stop-btn" hidden>停止</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" id="results-section" hidden>
+      <div class="section-header">
+        <h2>结果 <span id="result-count" class="count"></span></h2>
+        <div class="section-actions">
+          <span id="result-status" class="result-status" hidden>检索中…</span>
+          <button type="button" class="btn-danger btn-sm stop-btn" hidden>停止</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>关键词</th>
+              <th>ASIN</th>
+              <th>标题</th>
+              <th>价格</th>
+              <th>配送时效</th>
+              <th>配送类型</th>
+              <th>卖家</th>
+              <th>省份</th>
+              <th>地址</th>
+              <th>链接</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="results-empty" class="results-empty" hidden>暂无匹配结果，检索进行中…</p>
+
+      <details id="skipped-section" class="skipped-section" hidden>
+        <summary>
+          未入选记录
+          <span id="skipped-count" class="count"></span>
+        </summary>
+        <div class="table-wrap">
+          <table id="skipped-table">
+            <thead>
+              <tr>
+                <th>关键词</th>
+                <th>ASIN</th>
+                <th>标题</th>
+                <th>价格</th>
+                <th>配送时效</th>
+                <th>配送类型</th>
+                <th>卖家</th>
+                <th>省份</th>
+                <th>地址</th>
+                <th>未入选原因</th>
+                <th>链接</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="skipped-pagination" class="pagination" hidden>
+          <button type="button" id="skipped-prev" class="btn-page">上一页</button>
+          <span id="skipped-page-info" class="page-info"></span>
+          <button type="button" id="skipped-next" class="btn-page">下一页</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>运行日志</h2>
+        <div class="section-actions">
+          <button type="button" class="btn-danger btn-sm stop-btn" hidden>停止</button>
+          <span id="job-status" class="status-badge status-idle">空闲</span>
+        </div>
+      </div>
+      <pre id="log-panel" class="log-panel"></pre>
+    </section>
+
+    <section class="card" id="summary-section" hidden>
+      <h2>执行摘要</h2>
+      <div id="summary" class="summary"></div>
+      <div class="download-links" id="download-links"></div>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
