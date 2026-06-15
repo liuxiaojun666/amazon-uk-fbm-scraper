@@ -1,69 +1,11 @@
 # One-shot setup for Windows: install Node.js (if missing) + npm deps + Playwright Chromium
 $ErrorActionPreference = "Stop"
-$NodeMajorMin = 18
+. "$PSScriptRoot\win-node.ps1"
+. "$PSScriptRoot\win-project-root.ps1"
 
 function Write-Info($msg) { Write-Host "==> $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "!!> $msg" -ForegroundColor Yellow }
 function Write-Fail($msg) { Write-Host "ERROR: $msg" -ForegroundColor Red; exit 1 }
-
-function Get-NodeMajor {
-    try {
-        $v = (node -v 2>$null) -replace '^v(\d+).*', '$1'
-        if ($v -match '^\d+$') { return [int]$v }
-    } catch {}
-    return 0
-}
-
-function Test-NodeOk {
-    if (-not (Get-Command node -ErrorAction SilentlyContinue)) { return $false }
-    return (Get-NodeMajor) -ge $NodeMajorMin
-}
-
-function Refresh-Path {
-    $machine = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-    $user = [System.Environment]::GetEnvironmentVariable("Path", "User")
-    if ($machine -and $user) {
-        $env:Path = "$machine;$user"
-    } elseif ($machine) {
-        $env:Path = $machine
-    } elseif ($user) {
-        $env:Path = $user
-    }
-}
-
-function Install-NodeViaDownload {
-    Write-Warn "Downloading Node.js LTS installer from nodejs.org..."
-    $ProgressPreference = "SilentlyContinue"
-
-    try {
-        $index = Invoke-RestMethod -Uri "https://nodejs.org/dist/index.json" -UseBasicParsing
-        $lts = $index | Where-Object { $_.lts -ne $false } | Select-Object -First 1
-        if (-not $lts) { throw "Could not find an LTS release" }
-
-        $ver = $lts.version
-        $arch = if ([Environment]::Is64BitOperatingSystem) { "x64" } else { "x86" }
-        $msiName = "node-$ver-$arch.msi"
-        $url = "https://nodejs.org/dist/$ver/$msiName"
-        $dest = Join-Path $env:TEMP $msiName
-
-        Write-Info "Downloading $url"
-        Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
-
-        Write-Info "Installing Node.js (admin rights may be required)..."
-        $proc = Start-Process msiexec.exe -Wait -PassThru -ArgumentList @(
-            "/i", $dest, "/qn", "/norestart"
-        )
-        Remove-Item $dest -ErrorAction SilentlyContinue
-
-        if ($proc.ExitCode -ne 0 -and $proc.ExitCode -ne 3010) {
-            throw "Installer exited with code $($proc.ExitCode)"
-        }
-
-        Refresh-Path
-    } catch {
-        Write-Fail "Could not auto-install Node.js: $($_.Exception.Message). Install LTS from https://nodejs.org/ then run: npm run setup"
-    }
-}
 
 function Install-Node {
     if (Test-NodeOk) {
@@ -75,12 +17,16 @@ function Install-Node {
 
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         Write-Info "Trying winget..."
-        & winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements
+        & winget install --id OpenJS.NodeJS.LTS -e --accept-source-agreements --accept-package-agreements 2>$null
         Refresh-Path
     }
 
     if (-not (Test-NodeOk)) {
-        Install-NodeViaDownload
+        try {
+            Install-NodePortable
+        } catch {
+            Write-Fail "Could not install Node.js: $($_.Exception.Message). Install LTS from https://nodejs.org/ then run: npm run setup"
+        }
     }
 
     if (-not (Test-NodeOk)) {
@@ -90,7 +36,8 @@ function Install-Node {
     Write-Info "Node.js installed: $(node -v)"
 }
 
-$Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$OriginalRoot = Split-Path -Parent $PSScriptRoot
+$Root = Get-SafeProjectRoot -SourceRoot $OriginalRoot
 Set-Location $Root
 
 Write-Host ""
@@ -100,6 +47,9 @@ Write-Host ""
 Install-Node
 Write-Info "Installing project dependencies..."
 node scripts/setup-deps.js
+if ($LASTEXITCODE -ne 0) {
+    Write-Fail "Dependency install failed. Delete node_modules in $Root and double-click again."
+}
 
 Write-Warn "Reminder: enable VPN with UK exit node and proxy on 127.0.0.1:7897 before scraping."
 Write-Warn "Check: powershell -File scripts/check-vpn.ps1"

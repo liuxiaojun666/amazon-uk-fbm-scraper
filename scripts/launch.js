@@ -12,9 +12,9 @@ if (mode !== 'web' && mode !== 'scrape') {
   process.exit(1);
 }
 
-applyProxyEnv();
-
 await import('./ensure-deps.js');
+
+applyProxyEnv();
 
 const target = mode === 'web' ? 'server/index.js' : 'src/index.js';
 const result = spawnSync(process.execPath, [join(root, target), ...args], {

@@ -52,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install.ps1
 
 3. 启动：`npm run web`，或双击 **`启动 Web.bat`**
 
-没有 winget 时会自动从 nodejs.org 下载安装；若仍失败，请手动安装 LTS 后执行 `npm run setup`。
+没有 winget 或 MSI 安装失败（错误 1603）时，会自动下载便携版 Node.js 到用户目录（无需管理员权限）；若仍失败，请手动安装 LTS 后执行 `npm run setup`。
 
 ### 已有 Node 的用户
 

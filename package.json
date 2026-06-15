@@ -12,6 +12,8 @@
     "scrape": "node scripts/launch.js scrape",
     "web": "node scripts/launch.js web",
     "setup": "node scripts/setup-deps.js",
+    "pack": "node scripts/pack-release.js",
+    "serve-release": "node scripts/serve-release.js",
     "postinstall": "node scripts/setup-env.js"
   },
   "keywords": ["amazon", "scraper", "fbm"],
@@ -20,6 +22,6 @@
     "commander": "^12.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "playwright": "^1.50.1"
+    "playwright": "1.48.2"
   }
 }

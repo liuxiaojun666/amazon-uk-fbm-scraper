@@ -1,33 +1,11 @@
 # Windows: install (if needed) and start the Web UI. Called by 启动 Web.bat
 $ErrorActionPreference = "Stop"
+. "$PSScriptRoot\win-node.ps1"
+. "$PSScriptRoot\win-project-root.ps1"
 
-$Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$OriginalRoot = Split-Path -Parent $PSScriptRoot
+$Root = Get-SafeProjectRoot -SourceRoot $OriginalRoot
 Set-Location $Root
-
-function Get-NodeMajor {
-    try {
-        $v = (node -v 2>$null) -replace '^v(\d+).*', '$1'
-        if ($v -match '^\d+$') { return [int]$v }
-    } catch {}
-    return 0
-}
-
-function Test-NodeOk {
-    if (-not (Get-Command node -ErrorAction SilentlyContinue)) { return $false }
-    return (Get-NodeMajor) -ge 18
-}
-
-function Refresh-Path {
-    $machine = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-    $user = [System.Environment]::GetEnvironmentVariable("Path", "User")
-    if ($machine -and $user) {
-        $env:Path = "$machine;$user"
-    } elseif ($machine) {
-        $env:Path = $machine
-    } elseif ($user) {
-        $env:Path = $user
-    }
-}
 
 Write-Host ""
 Write-Host "========================================"

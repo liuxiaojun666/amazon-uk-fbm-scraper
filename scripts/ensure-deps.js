@@ -1,17 +1,10 @@
-import { execSync } from 'child_process';
 import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { depsInstalled } from './deps-check.js';
+import { runNpmInstall, runPlaywrightInstall } from './npm-env.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-function run(cmd) {
-  execSync(cmd, { cwd: root, stdio: 'inherit' });
-}
-
-function depsInstalled() {
-  return existsSync(join(root, 'node_modules', 'playwright', 'package.json'));
-}
 
 async function chromiumInstalled() {
   try {
@@ -22,14 +15,14 @@ async function chromiumInstalled() {
   }
 }
 
-if (!depsInstalled()) {
-  console.log('Installing npm dependencies...');
-  run('npm install');
+if (!depsInstalled(root)) {
+  console.log('Installing npm dependencies (npmmirror)...');
+  runNpmInstall(root);
 } else {
   await import('./setup-env.js');
 }
 
 if (!(await chromiumInstalled())) {
   console.log('Installing Playwright Chromium...');
-  run('npx playwright install chromium');
+  runPlaywrightInstall(root);
 }
