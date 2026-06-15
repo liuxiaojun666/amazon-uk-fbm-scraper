@@ -52,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install.ps1
 
 3. 启动：`npm run web`，或双击 **`启动 Web.bat`**
 
-没有 winget 时，先从 [nodejs.org](https://nodejs.org/) 安装 LTS，再执行 `npm run setup`。
+没有 winget 时会自动从 nodejs.org 下载安装；若仍失败，请手动安装 LTS 后执行 `npm run setup`。
 
 ### 已有 Node 的用户
 
