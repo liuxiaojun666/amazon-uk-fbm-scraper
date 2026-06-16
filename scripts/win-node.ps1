@@ -113,3 +113,18 @@ function Install-NodePortable {
 
     Add-PortableNodeToPath $destDir
 }
+
+function Invoke-Npm {
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
+
+    $npmCmd = $null
+    $npmCmdInfo = Get-Command npm.cmd -ErrorAction SilentlyContinue
+    if ($npmCmdInfo) { $npmCmd = $npmCmdInfo.Source }
+    if (-not $npmCmd) {
+        $npmCmd = Join-Path (Split-Path (Get-Command node -ErrorAction Stop).Source -Parent) "npm.cmd"
+    }
+    if (-not (Test-Path $npmCmd)) {
+        throw "npm.cmd not found next to node.exe"
+    }
+    & $npmCmd @Args
+}

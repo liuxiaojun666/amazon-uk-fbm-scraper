@@ -1,11 +1,13 @@
 import { chromium } from 'playwright';
 import dotenv from 'dotenv';
+import { isProxyDisabled } from '../../scripts/proxy-env.js';
 
 dotenv.config();
 
 const AMAZON_UK_BASE = 'https://www.amazon.co.uk';
 
 function getProxyUrl() {
+  if (isProxyDisabled()) return '';
   return (
     process.env.HTTP_PROXY ||
     process.env.http_proxy ||
@@ -40,6 +42,8 @@ export async function createBrowser({ headless } = {}) {
   if (config.proxyUrl) {
     launchOptions.proxy = { server: config.proxyUrl };
     console.log(`Using proxy: ${config.proxyUrl}`);
+  } else {
+    console.log('Direct connection (no HTTP proxy — uses system VPN like Chrome)');
   }
 
   const browser = await chromium.launch(launchOptions);

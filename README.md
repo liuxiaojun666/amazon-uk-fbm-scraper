@@ -5,7 +5,7 @@ Scrape Amazon UK (`amazon.co.uk`) by keyword, filter **FBM** (merchant-fulfilled
 ## Requirements
 
 - Node.js 18+（推荐 20 LTS）— **没有 Node 也可以，见下方「零环境安装」**
-- VPN with local proxy on `127.0.0.1:7897`
+- VPN with **UK exit node** (system VPN or local HTTP proxy)
 - **VPN 出口必须是英国 (GB)** — 俄罗斯/中国等非英国 IP 会导致 Amazon 显示「Deliver to Russian Federation」等，offer listing 为空，无法抓取 FBM 卖家
 
 ```bash
@@ -53,6 +53,24 @@ powershell -ExecutionPolicy Bypass -File scripts/install.ps1
 3. 启动：`npm run web`，或双击 **`启动 Web.bat`**
 
 没有 winget 或 MSI 安装失败（错误 1603）时，会自动下载便携版 Node.js 到用户目录（无需管理员权限）；若仍失败，请手动安装 LTS 后执行 `npm run setup`。
+
+**PowerShell 里 `npm i` 报「禁止运行脚本」**：这是 Windows 执行策略拦截 `npm.ps1`，不是缺少 dotenv。任选其一即可：
+
+```bat
+安装.bat
+```
+
+```bat
+启动 Web.bat
+```
+
+```cmd
+npm.cmd i
+```
+
+```cmd
+node scripts/setup-deps.js
+```
 
 ### 已有 Node 的用户
 
@@ -143,9 +161,19 @@ npm run scrape -- "phone case" --headed
 
 ## VPN / Proxy
 
-启动命令已内置代理（`127.0.0.1:7897`），一般无需手动设置。
+**Chrome 能直接打开 amazon.co.uk** 时，保持 `.env` 里 `DISABLE_PROXY=true`（默认），爬虫与 Chrome 一样走系统 VPN，**不要**配 `127.0.0.1:7897`。
 
-检查 VPN 是否走英国出口：
+仅当 VPN 软件提供本地 HTTP 代理（如 Clash 7897）时，才设置：
+
+```env
+DISABLE_PROXY=false
+HTTP_PROXY=http://127.0.0.1:7897
+HTTPS_PROXY=http://127.0.0.1:7897
+```
+
+若日志出现 `ERR_PROXY_CONNECTION_FAILED` 或 `Using proxy: http://127.0.0.1:7897`，说明 `.env` 仍在走代理——改为 `DISABLE_PROXY=true` 并注释掉 `HTTP_PROXY` 行，重启 Web 服务。
+
+检查出口是否为英国：
 
 ```bash
 # macOS / Linux
@@ -170,7 +198,8 @@ Seller profiles are cached in `cache/`.
 | `DELAY_MS` | `4000` | Delay between products (not each sub-page) |
 | `PAGE_SETTLE_MS` | `800` | Wait after page load (lower = faster startup) |
 | `HEADLESS` | `true` | Browser headless mode |
-| `HTTP_PROXY` | `http://127.0.0.1:7897` | VPN proxy |
+| `DISABLE_PROXY` | `true` | `true` = 与 Chrome 相同直连；`false` = 使用下方 HTTP 代理 |
+| `HTTP_PROXY` | （空） | 仅 Clash 等本地代理时填写，如 `http://127.0.0.1:7897` |
 | `DELIVERY_POSTCODE` | `SW1A 1AA` | UK delivery postcode (London) |
 
 ## Delivery postcode

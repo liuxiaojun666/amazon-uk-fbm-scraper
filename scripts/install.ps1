@@ -51,7 +51,7 @@ if ($LASTEXITCODE -ne 0) {
     Write-Fail "Dependency install failed. Delete node_modules in $Root and double-click again."
 }
 
-Write-Warn "Reminder: enable VPN with UK exit node and proxy on 127.0.0.1:7897 before scraping."
+Write-Warn "Reminder: enable VPN with a UK exit node before scraping (Chrome should open amazon.co.uk)."
 Write-Warn "Check: powershell -File scripts/check-vpn.ps1"
 
 Write-Host ""

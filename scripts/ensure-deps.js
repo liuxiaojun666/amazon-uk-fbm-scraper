@@ -24,5 +24,5 @@ if (!depsInstalled(root)) {
 
 if (!(await chromiumInstalled())) {
   console.log('Installing Playwright Chromium...');
-  runPlaywrightInstall(root);
+  await runPlaywrightInstall(root);
 }

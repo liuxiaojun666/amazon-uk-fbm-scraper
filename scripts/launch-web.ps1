@@ -14,6 +14,7 @@ Write-Host "========================================"
 Write-Host ""
 
 if (-not (Test-NodeOk)) {
+    Write-Host "Node.js 18+ required (current: $(node -v 2>$null))." -ForegroundColor Yellow
     Write-Host "First run: installing Node.js and dependencies..."
     Write-Host "This may take a few minutes. Please wait..."
     Write-Host ""
@@ -31,5 +32,9 @@ if (-not (Test-NodeOk)) {
     }
 }
 
-npm run web
+Write-Host "Checking dependencies..."
+node scripts/setup-deps.js
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+node scripts/launch.js web
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
